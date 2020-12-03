@@ -5,6 +5,7 @@ defmodule Frank.ParserTest do
     test "parse mutliple atoms" do
       ["foo", 666.0, "\"hail satan\"", 6.66] = Frank.Parser.parse(~s[foo 666 "hail satan" 6.66])
     end
+
     test "parse a symbol" do
       ["foo"] = Frank.Parser.parse(~s[foo])
     end
@@ -34,7 +35,8 @@ defmodule Frank.ParserTest do
     end
 
     test "parse strings; multiple" do
-      ["\"satan\" \"lucifer\" \"antichrist\""] = Frank.Parser.parse(~s["satan" "lucifer" "antichrist"])
+      ["\"satan\" \"lucifer\" \"antichrist\""] =
+        Frank.Parser.parse(~s["satan" "lucifer" "antichrist"])
     end
   end
 
