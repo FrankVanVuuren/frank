@@ -1,45 +1,11 @@
 defmodule Frank.Parser do
-  defmacro starts_with(x, y) do
-    y_length = String.length(y)
-
-    quote do
-      binary_part(unquote(x), 0, unquote(y_length)) == unquote(y)
-    end
-  end
-
-  defmacro ends_with(x, y) do
-    y_length = String.length(y)
-
-    quote do
-      binary_part(unquote(x), byte_size(unquote(x)), unquote(0 - y_length)) == unquote(y)
-    end
-  end
-
   def parse(source) when is_binary(source) do
     source
     |> String.replace("(", " ( ")
     |> String.replace(")", " ) ")
     |> String.split()
+    |> string_joiner()
     |> parse()
-  end
-
-  def parse([string | rest]) when starts_with(string, "\"") do
-    string_chunks = [string | parse(rest)]
-
-    new_rest =
-      rest
-      |> Enum.drop(length(string_chunks) + 1)
-      |> parse()
-
-    IO.inspect(rest, label: "rest")
-    IO.inspect(string_chunks, label: "string chunks")
-    IO.inspect(new_rest, label: "new_rest")
-
-    [Enum.join(string_chunks, " ") | new_rest]
-  end
-
-  def parse([string | rest]) when ends_with(string, "\"") do
-    [string]
   end
 
   def parse(["(" | rest]) do
@@ -66,4 +32,22 @@ defmodule Frank.Parser do
   end
 
   def parse([]), do: []
+
+  defp string_joiner(list, acc \\ [])
+
+  defp string_joiner([], acc), do: acc
+
+  defp string_joiner([car | cdr], acc) do
+    cond do
+      String.starts_with?(car, "\"") && String.ends_with?(car, "\"") ->
+        string_joiner(cdr, acc ++ [car])
+
+      String.starts_with?(car, "\"") ->
+        [cadr | cddr] = cdr
+        string_joiner([car <> " " <> cadr | cddr], acc)
+
+      true ->
+        string_joiner(cdr, acc ++ [car])
+    end
+  end
 end

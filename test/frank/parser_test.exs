@@ -35,7 +35,7 @@ defmodule Frank.ParserTest do
     end
 
     test "parse strings; multiple" do
-      ["\"satan\" \"lucifer\" \"antichrist\""] =
+      ["\"satan\"", "\"lucifer\"", "\"antichrist\""] =
         Frank.Parser.parse(~s["satan" "lucifer" "antichrist"])
     end
   end
