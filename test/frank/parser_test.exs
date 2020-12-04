@@ -46,7 +46,10 @@ defmodule Frank.ParserTest do
     end
 
     test "parse a nested list" do
-      [["foo", "bar", ["baz"]]] = Frank.Parser.parse(~s[(foo bar (baz))])
+      expected = [["define", "add2", ["lambda", ["x"], ["+", "x", 2.0]]]]
+      result = Frank.Parser.parse(~s[(define add2 (lambda (x) (+ x 2)))])
+
+      ^expected = result
     end
   end
 end
