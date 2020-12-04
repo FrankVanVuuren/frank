@@ -1,53 +1,38 @@
 defmodule Frank.Parser do
-  def parse(source) when is_binary(source) do
-    source
-    |> String.replace("(", " ( ")
-    |> String.replace(")", " ) ")
-    |> String.split()
-    |> string_joiner()
-    |> parse()
+  def parse(frank_src) when is_binary(frank_src) do
+    remaining =
+      frank_src
+      |> String.replace("(", " ( ")
+      |> String.replace(")", " ) ")
+      |> String.split()
+
+    parse({remaining, []})
   end
 
-  def parse(["(" | rest]) do
-    list_body = parse(rest)
-
-    new_rest =
-      rest
-      |> Enum.drop(length(list_body) + 1)
-      |> parse()
-
-    [list_body | new_rest]
+  def parse({["(" | cdr], acc}) do
+    {remaining, list} = parse({cdr, []})
+    parse({remaining, acc ++ [list]})
   end
 
-  def parse([")" | _rest]), do: []
-
-  def parse([token | rest]) do
-    atom =
-      case Float.parse(token) do
-        {value, ""} -> value
-        :error -> token
-      end
-
-    [atom | parse(rest)]
+  def parse({[")" | cdr], acc}) do
+    {cdr, acc}
   end
 
-  def parse([]), do: []
-
-  defp string_joiner(list, acc \\ [])
-
-  defp string_joiner([], acc), do: acc
-
-  defp string_joiner([car | cdr], acc) do
-    cond do
-      String.starts_with?(car, "\"") && String.ends_with?(car, "\"") ->
-        string_joiner(cdr, acc ++ [car])
-
-      String.starts_with?(car, "\"") ->
-        [cadr | cddr] = cdr
-        string_joiner([car <> " " <> cadr | cddr], acc)
-
-      true ->
-        string_joiner(cdr, acc ++ [car])
+  def parse({["\"" <> _ = car | cdr], acc}) do
+    if String.ends_with?(car, "\"") do
+      parse({cdr, acc ++ [car]})
+    else
+      [cadr | cddr] = cdr
+      parse({[car <> " " <> cadr | cddr], acc})
     end
   end
+
+  def parse({[car | cdr], acc}) do
+    case Float.parse(car) do
+      {value, ""} -> parse({cdr, acc ++ [value]})
+      _ -> parse({cdr, acc ++ [car]})
+    end
+  end
+
+  def parse({[], acc}), do: acc
 end
